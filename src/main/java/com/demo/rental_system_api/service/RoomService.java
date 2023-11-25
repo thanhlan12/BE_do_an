@@ -9,6 +9,8 @@ import java.util.List;
 public interface RoomService {
     List<RoomDto> getAllRooms();
 
+    List<RoomDto> getRoomByBuilding(Integer buildingId);
+
     RoomDto getRoomById(Integer roomId);
 
     RoomDto createRoom(CreateRoomRequest createRoomRequest);

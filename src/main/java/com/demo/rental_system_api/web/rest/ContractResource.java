@@ -27,7 +27,7 @@ public class ContractResource {
     }
 
     @PostMapping
-    public ResponseEntity<?> createContract(@Valid @RequestBody CreateContractRequest createContractRequest) {
+    public ResponseEntity<?> createContract(@Valid @RequestBody CreateContractRequest createContractRequest) throws Exception {
         return ResponseUtils.ok(contractService.createContract(createContractRequest));
     }
 }

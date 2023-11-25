@@ -1,12 +1,17 @@
-package com.demo.rental_system_api.web.dto;
+package com.demo.rental_system_api.model;
 
 import lombok.Data;
 
+import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
+
 
 @Data
-public class MonthBillDto {
+@Entity
+@Table(name = "liquidationBill")
+public class liquidation {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private Date dueDate;
     private Date paymentDate;
@@ -14,16 +19,9 @@ public class MonthBillDto {
     private String note;
     private boolean statusPayment;
 
-    private ContractDto contractDto;
-    private List<UsedServiceDto> usedServiceDtoList;
-
-    @Data
-    public static class UsedServiceDto {
-        private ServiceDto serviceDto;
-        private Integer quantity;
-        private Float totalPrice;
-    }
-
+    @ManyToOne
+    @JoinColumn(name = "contract_id")
+    private Contract contract;
     public boolean getStatusPayment() {
         return statusPayment;
     }
@@ -31,5 +29,4 @@ public class MonthBillDto {
     public void setStatusPayment(boolean statusPayment) {
         this.statusPayment = statusPayment;
     }
-
 }

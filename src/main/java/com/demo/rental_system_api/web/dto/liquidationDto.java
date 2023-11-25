@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-public class MonthBillDto {
+public class liquidationDto {
     private Integer id;
     private Date dueDate;
     private Date paymentDate;
@@ -15,7 +15,7 @@ public class MonthBillDto {
     private boolean statusPayment;
 
     private ContractDto contractDto;
-    private List<UsedServiceDto> usedServiceDtoList;
+    private List<MonthBillDto.UsedServiceDto> usedServiceDtoList;
 
     @Data
     public static class UsedServiceDto {
@@ -31,5 +31,6 @@ public class MonthBillDto {
     public void setStatusPayment(boolean statusPayment) {
         this.statusPayment = statusPayment;
     }
+
 
 }

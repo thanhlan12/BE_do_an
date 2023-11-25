@@ -10,5 +10,5 @@ public interface ContractService {
 
     ContractDto getContractById(Integer contractId);
 
-    ContractDto createContract(CreateContractRequest createContractRequest);
+    ContractDto createContract(CreateContractRequest createContractRequest) throws Exception;
 }

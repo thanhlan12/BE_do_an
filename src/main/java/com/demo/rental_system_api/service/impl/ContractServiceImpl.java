@@ -4,6 +4,7 @@ import com.demo.rental_system_api.model.Client;
 import com.demo.rental_system_api.model.Contract;
 import com.demo.rental_system_api.model.Room;
 import com.demo.rental_system_api.model.constants.ClientStatus;
+import com.demo.rental_system_api.model.constants.RoomStatus;
 import com.demo.rental_system_api.repository.ClientRepository;
 import com.demo.rental_system_api.repository.ContractRepository;
 import com.demo.rental_system_api.repository.RoomRepository;
@@ -55,14 +56,16 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     @Transactional
-    public ContractDto createContract(CreateContractRequest createContractRequest) {
+    public ContractDto createContract(CreateContractRequest createContractRequest) throws Exception {
         var room = roomRepository
                 .findById(createContractRequest.getRoomId())
                 .orElseThrow(() -> new EntityNotFoundException(
                         Room.class.getName(),
                         createContractRequest.getRoomId().toString()
                 ));
-
+        if (room.getRoomStatus() == RoomStatus.RENTED) {
+            throw new Exception("Phòng đang có người thuê");
+        }
         var client = clientRepository
                 .findById(createContractRequest.getClientId())
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -77,7 +80,11 @@ public class ContractServiceImpl implements ContractService {
         contractRepository.save(contract);
 
         client.setClientStatus(ClientStatus.RENTED);
+        if(contract.getStartDate().before(new Date()))
+            throw new Exception("Thời gian bắt đầu thuê không được trước thời điểm hiện tại");
         clientRepository.save(client);
+        room.setRoomStatus(RoomStatus.RENTED);
+        roomRepository.save(room);
 
         return mapToContractDto(contract);
     }

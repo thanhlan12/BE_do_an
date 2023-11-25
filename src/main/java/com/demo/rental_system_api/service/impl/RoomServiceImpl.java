@@ -17,7 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +38,22 @@ public class RoomServiceImpl implements RoomService {
                 .map(this::mapToRoomDto)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<RoomDto> getRoomByBuilding(Integer buildingId) {
+        Optional<Building> building = buildingRepository.findById(buildingId);
+
+        if (building.isPresent()) {
+            List<Room> rooms = roomRepository.getRoomByBuilding(building.get());
+
+            return rooms.stream()
+                    .map(room -> mappingHelper.map(room, RoomDto.class))
+                    .collect(Collectors.toList());
+        }
+
+        return new ArrayList<>(); // Return an empty list if building is not found
+    }
+
 
     @Override
     public RoomDto getRoomById(Integer roomId) {
