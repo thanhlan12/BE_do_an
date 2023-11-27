@@ -1,5 +1,6 @@
 package com.demo.rental_system_api.web.dto;
 
+import com.demo.rental_system_api.model.Room;
 import lombok.Data;
 
 import java.util.Date;
@@ -14,5 +15,5 @@ public class ContractDto {
     private Float roomDeposit;
 
     private ClientDto clientDto;
-    private RoomDto roomDto;
+    private Room room;
 }

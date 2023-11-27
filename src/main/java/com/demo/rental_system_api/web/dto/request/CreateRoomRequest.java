@@ -13,8 +13,9 @@ public class CreateRoomRequest {
 
     @Data
     public static class BuildingRequest {
+        private Integer id;
         private String name;
         private String address;
-        private String description = "None";
+        private String description;
     }
 }

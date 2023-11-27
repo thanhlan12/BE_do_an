@@ -31,11 +31,16 @@ public class RoomServiceImpl implements RoomService {
     private final MappingHelper mappingHelper;
 
     @Override
-    public List<RoomDto> getAllRooms() {
-        return roomRepository
+    public List<Room> getAllRooms() {
+        return roomRepository.findAll();
+    }
+
+    @Override
+    public List<BuildingDto> getAllBuildings() {
+        return buildingRepository
                 .findAll()
                 .stream()
-                .map(this::mapToRoomDto)
+                .map(this::mapToBuildingDto)
                 .collect(Collectors.toList());
     }
 
@@ -56,38 +61,27 @@ public class RoomServiceImpl implements RoomService {
 
 
     @Override
-    public RoomDto getRoomById(Integer roomId) {
-        return roomRepository
-                .findById(roomId)
-                .map(this::mapToRoomDto)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        Room.class.getName(),
-                        roomId.toString()
-                ));
+    public Optional<Room> getRoomById(Integer roomId) {
+        return roomRepository.findById(roomId);
     }
 
     @Override
-    @Transactional
-    public RoomDto createRoom(CreateRoomRequest createRoomRequest) {
-        var building = buildingRepository
-                .findByNameAndAddress(
-                        createRoomRequest.getBuildingRequest().getName(),
-                        createRoomRequest.getBuildingRequest().getAddress())
-                .orElseGet(() -> {
-                    var newBuilding = mappingHelper.map(
-                            createRoomRequest.getBuildingRequest(),
-                            Building.class
-                    );
-                    return buildingRepository.save(newBuilding);
-                });
+    public RoomDto createRoom(CreateRoomRequest createRoomRequest) throws Exception {
+        Optional<Building> building = buildingRepository.findById(createRoomRequest.getBuildingRequest().getId());
 
         var room = mappingHelper.map(createRoomRequest, Room.class);
-        room.setBuilding(building);
+        if(building.isPresent()){
+            room.setBuilding(building);
+        }else {
+            throw new Exception("tòa nhà không tồn tại");
+        }
+
         room.setRoomStatus(RoomStatus.AVAILABLE);
         roomRepository.save(room);
 
         return mapToRoomDto(room);
     }
+
 
     @Override
     @Transactional
@@ -99,20 +93,14 @@ public class RoomServiceImpl implements RoomService {
                         roomId.toString()
                 ));
 
-        var building = buildingRepository
-                .findByNameAndAddress(
-                        updateRoomRequest.getBuildingRequest().getName(),
-                        updateRoomRequest.getBuildingRequest().getAddress())
-                .orElseGet(() -> {
-                    var newBuilding = mappingHelper.map(
-                            updateRoomRequest.getBuildingRequest(),
-                            Building.class
-                    );
-                    return buildingRepository.save(newBuilding);
-                });
-
+        Optional<Building> building = buildingRepository.findById(updateRoomRequest.getBuildingRequest().getId());
+        if (building.isPresent()) {
+            room.setBuilding(building);
+        } else {
+            throw new IllegalArgumentException("Invalid building ID: " + updateRoomRequest.getBuildingRequest().getId());
+        }
         mappingHelper.mapIfSourceNotNullAndStringNotBlank(updateRoomRequest, room);
-        room.setBuilding(building);
+       // room.setBuilding(building);
         roomRepository.save(room);
 
         return mapToRoomDto(room);
@@ -133,7 +121,12 @@ public class RoomServiceImpl implements RoomService {
 
     private RoomDto mapToRoomDto(Room room) {
         var roomDto = mappingHelper.map(room, RoomDto.class);
-        roomDto.setBuildingDto(mappingHelper.map(room.getBuilding(), BuildingDto.class));
+//        roomDto.setBuildingDto(mapToBuildingDto(room.getBuilding()));
         return roomDto;
+    }
+
+    private BuildingDto mapToBuildingDto(Building building) {
+        var buildingDto = mappingHelper.map(building, BuildingDto.class);
+        return buildingDto;
     }
 }

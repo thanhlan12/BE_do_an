@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Time;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
@@ -33,17 +35,18 @@ public class MonthBillServiceImpl implements MonthBillService {
     private final liquidationRepository liquidationRepo;
     private final MappingHelper mappingHelper;
 
-    private boolean checkMonthBillByTime(Date timeDate) {
+    private boolean checkMonthBillByTime(Date timeDate, Integer idContract) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(timeDate);
         calendar.add(Calendar.MONTH, -1);
         Date previousMonthDate = calendar.getTime();
         System.out.println("start_date: "+previousMonthDate);
         System.out.println("end_date: "+timeDate);
-        List<MonthBill> listBill = monthBillRepository.findBillsByTime(previousMonthDate,timeDate);
+        List<MonthBill> listBill = monthBillRepository.findBillsByContractAndTime(idContract,previousMonthDate,timeDate);
         if(listBill.isEmpty()){
             return true;
         }
+        System.out.println("999999"+listBill.get(0).getPaymentDate());
         return false;
     }
 
@@ -86,6 +89,7 @@ public class MonthBillServiceImpl implements MonthBillService {
 
 
     @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class})
     public liquidationDto createBill(CreateMonthBillRequest createMonthBillRequest) {
         var contract = contractRepository
                 .findById(createMonthBillRequest.getContractId())
@@ -133,7 +137,7 @@ public class MonthBillServiceImpl implements MonthBillService {
                 + usedServices.stream().flatMapToDouble(e -> DoubleStream.of(e.getTotalPrice())).sum();
 
         monthBill.setTotalPrice((float) totalPriceBill);
-//        monthBillRepository.save(monthBill);
+        monthBillRepository.save(monthBill);
         liquidation liqui = new liquidation();
         liqui.setContract(monthBill.getContract());
         liqui.setDueDate(monthBill.getDueDate());
@@ -148,8 +152,17 @@ public class MonthBillServiceImpl implements MonthBillService {
     }
 
 
+    public static Date getLastDayOfMonth(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+        return calendar.getTime();
+    }
+
     @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class})
     public MonthBillDto createMonthlyBill(CreateMonthBillRequest createMonthBillRequest) throws Exception  {
+
 
         var contract = contractRepository
                 .findById(createMonthBillRequest.getContractId())
@@ -165,6 +178,8 @@ public class MonthBillServiceImpl implements MonthBillService {
         if (contract.getDueDate().before(new Date())) {
             throw new RuntimeException("Hợp đồng đã hết hạn, vui lòng thanh lý");
         }
+
+
 
         var monthBill = mappingHelper.map(createMonthBillRequest, MonthBill.class);
         monthBill.setContract(contract);
@@ -198,6 +213,10 @@ public class MonthBillServiceImpl implements MonthBillService {
         var totalPriceBill = contract.getRoom().getPrice()+ usedServices.stream().flatMapToDouble(e -> DoubleStream.of(e.getTotalPrice())).sum();
 
         monthBill.setTotalPrice((float) totalPriceBill);
+//        Date date = new Date();
+//        if(!checkMonthBillByTime((getLastDayOfMonth(date)),monthBill.getContract().getId())){
+//            throw new Exception("hóa đơn tháng này đã được tạo");
+//        }
         monthBillRepository.save(monthBill);
 
         return mapToMonthBillDto(monthBill);
@@ -225,9 +244,9 @@ public class MonthBillServiceImpl implements MonthBillService {
 
     private ContractDto mapToContractDto(Contract contract) {
         var contractDto = mappingHelper.map(contract, ContractDto.class);
-        var roomDto = mappingHelper.map(contract.getRoom(), RoomDto.class);
-        roomDto.setBuildingDto(mappingHelper.map(contract.getRoom().getBuilding(), BuildingDto.class));
-        contractDto.setRoomDto(roomDto);
+//        var roomDto = mappingHelper.map(contract.getRoom(), RoomDto.class);
+//        roomDto.setBuildingDto(mappingHelper.map(contract.getRoom().getBuilding(), BuildingDto.class));
+        contractDto.setRoom(contract.getRoom());
         contractDto.setClientDto(mappingHelper.map(contract.getClient(), ClientDto.class));
         return contractDto;
     }

@@ -11,7 +11,9 @@ import java.util.List;
 
 public interface MonthBillRepository extends JpaRepository<MonthBill, Integer> {
     List<MonthBill> findByContract_Id(Integer contractId);
-    @Query("SELECT b FROM MonthBill b WHERE b.dueDate >= :startDate AND b.dueDate < :endDate")
-    List<MonthBill> findBillsByTime(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+//    @Query("SELECT b FROM MonthBill b WHERE b.dueDate >= :startDate AND b.dueDate < :endDate")
+//    List<MonthBill> findBillsByTime(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
+    @Query("SELECT b FROM MonthBill b WHERE b.contract.id = :idContract AND b.dueDate >= :startDate AND b.dueDate < :endDate")
+    List<MonthBill> findBillsByContractAndTime(@Param("idContract") Integer idContract, @Param("startDate") Date startDate, @Param("endDate") Date endDate);
 }

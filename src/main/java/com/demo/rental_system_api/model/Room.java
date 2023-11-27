@@ -4,6 +4,7 @@ import com.demo.rental_system_api.model.constants.RoomStatus;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.Optional;
 
 @Data
 @Entity
@@ -22,4 +23,11 @@ public class Room {
     @ManyToOne
     @JoinColumn(name = "building_id")
     private Building building;
+
+    public void setBuilding(Optional<Building> building) {
+        if (building.isPresent()) {
+            this.building = building.get();
+        }
+    }
+
 }

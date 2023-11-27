@@ -22,6 +22,14 @@ public class RoomResource {
         return ResponseUtils.ok(roomService.getAllRooms());
     }
 
+
+    @GetMapping("/getAllBuilding")
+    public ResponseEntity<?> getAllBuildings() {
+        return ResponseUtils.ok(roomService.getAllBuildings());
+    }
+
+
+
     @GetMapping("/{roomId}")
     public ResponseEntity<?> getRoomById(@PathVariable Integer roomId) {
         return ResponseUtils.ok(roomService.getRoomById(roomId));
@@ -33,7 +41,7 @@ public class RoomResource {
     }
 
     @PostMapping
-    public ResponseEntity<?> createRoom(@Valid @RequestBody CreateRoomRequest createRoomRequest) {
+    public ResponseEntity<?> createRoom(@Valid @RequestBody CreateRoomRequest createRoomRequest) throws Exception {
         return ResponseUtils.ok(roomService.createRoom(createRoomRequest));
     }
 

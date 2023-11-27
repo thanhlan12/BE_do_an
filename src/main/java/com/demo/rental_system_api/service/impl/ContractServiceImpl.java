@@ -80,8 +80,9 @@ public class ContractServiceImpl implements ContractService {
         contractRepository.save(contract);
 
         client.setClientStatus(ClientStatus.RENTED);
-        if(contract.getStartDate().before(new Date()))
-            throw new Exception("Thời gian bắt đầu thuê không được trước thời điểm hiện tại");
+//        if(contract.getStartDate().before(new Date())) {
+//            throw new Exception("Thời gian bắt đầu thuê không được trước thời điểm hiện tại");
+//        }
         clientRepository.save(client);
         room.setRoomStatus(RoomStatus.RENTED);
         roomRepository.save(room);
@@ -91,9 +92,9 @@ public class ContractServiceImpl implements ContractService {
 
     private ContractDto mapToContractDto(Contract contract) {
         var contractDto = mappingHelper.map(contract, ContractDto.class);
-        var roomDto = mappingHelper.map(contract.getRoom(), RoomDto.class);
-        roomDto.setBuildingDto(mappingHelper.map(contract.getRoom().getBuilding(), BuildingDto.class));
-        contractDto.setRoomDto(roomDto);
+//        var roomDto = mappingHelper.map(contract.getRoom(), RoomDto.class);
+//        roomDto.setBuildingDto(mappingHelper.map(contract.getRoom().getBuilding(), BuildingDto.class));
+        contractDto.setRoom(contract.getRoom());
         contractDto.setClientDto(mappingHelper.map(contract.getClient(), ClientDto.class));
         return contractDto;
     }
